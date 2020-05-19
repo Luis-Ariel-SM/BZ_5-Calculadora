@@ -175,16 +175,13 @@ def pinta (valor):
 class Controlador (ttk.Frame):
     def __init__(self, parent, ** kwargs):
         ttk.Frame.__init__(self, parent, width = 272, height = 300)
-        self.reset ()
-        
+        self.reset ()        
 
         self.display = Display (self)
-        self.display.grid (column = 0, row = 0, columnspan = 4)
+        self.display.grid (column = 0, row = 0)
 
-        for properties in dbuttons:
-            btn = CalcButton (self, properties ['text'], self.set_operation, properties.get('W', 1), properties.get ('H', 1))
-            btn.grid (column = properties ['col'], row = properties ['row'], columnspan = properties.get('W', 1), rowspan = properties.get ('H', 1))
-
+        self.keyboard = keyboard(self, 'R')
+        self.keyboard.grid (column = 0, row =1)    
    
     def reset (self):
         self.op1 = None
@@ -197,8 +194,10 @@ class Controlador (ttk.Frame):
     def to_float (self, valor):
         return float (valor.replace(',' , '.'))
 
+
     def to_str (self, valor):
         return str (valor).replace('.' , ',')
+
 
     def calculate (self):
 
@@ -274,7 +273,6 @@ class Controlador (ttk.Frame):
         self.display.paint(self.dispValue)   
 
 
-        
 class Display(ttk.Frame):
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent, width = 272, height = 50)
@@ -309,24 +307,63 @@ class Selector(ttk.Frame):
     def __click (self):
         self.status = self.__value.get()
 
+
 class Keyboard(ttk.Frame):
     def __init__(self, parent, status = 'N'):
         ttk.Frame.__init__(self, parent, height = 250, width = 272)
+        self.__status = status
+        self.listaBRomanos = []
+        self.listaBNormales = []
 
-        if status == 'N':
-            dbuttons = normal_buttons
+        if self.__status == 'N':
+            self.pintaNormal()
         else:
-            dbuttons = roman_buttons 
-        
-        for properties in dbuttons:
-            btn = CalcButton (self, properties ['text'], None, properties.get('W', 1), properties.get ('H', 1))
-            btn.grid (column = properties ['col'], row = properties ['row'], columnspan = properties.get('W', 1), rowspan = properties.get ('H', 1))
+            self.pintaRomano()
+                  
+    @property
+    def status(self):
+        return self.__status
 
+    @status.setter    
+    def status (self, valor):
+        self.__status = valor
 
-   
+        if valor == 'N':
+            self.pintaNormal()
+        else:
+            self.pintaRomano()
+
+    def pintaNormal(self):
+        if len(self.listaBNormales) == 0:        
+            for properties in normal_buttons:
+                btn = CalcButton(self, properties['text'], None, properties.get("W", 1), properties.get("H", 1))
+                self.listaBNormales.append((btn, properties))
+                btn.grid(column=properties['col'], row=properties['row'], columnspan=properties.get("W", 1), rowspan=properties.get("H", 1))
+    
+        else:
+            for btn, properties in self.listaBNormales:
+                     btn.grid(column=properties['col'], row=properties['row'], columnspan=properties.get("W", 1), rowspan=properties.get("H", 1))
+                   
+        for borra, properties in self.listaBRomanos:
+            borra.grid_forget() 
+
+    
+    def pintaRomano(self):
+        if len(self.listaBRomanos) == 0:
+            for properties in roman_buttons:
+                btn = CalcButton(self, properties['text'], None, properties.get("W", 1), properties.get("H", 1))
+                self.listaBRomanos.append((btn, properties))
+                btn.grid(column=properties['col'], row=properties['row'], columnspan=properties.get("W", 1), rowspan=properties.get("H", 1))
+
+        else:
+            for btn, properties in self.listaBRomanos:
+                     btn.grid(column=properties['col'], row=properties['row'], columnspan=properties.get("W", 1), rowspan=properties.get("H", 1))
+
+        for borra, properties in self.listaBNormales:
+            borra.grid_forget()
 
 class CalcButton(ttk.Frame):
-    def __init__(self, parent, value, command, width = 1, height = 1,):
+    def __init__(self, parent, value, command, width = 1, height = 1):
         ttk.Frame.__init__(self, parent, width = 68*width, height = 50*height)
         self.pack_propagate(0)
 
